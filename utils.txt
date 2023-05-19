@@ -58,15 +58,3 @@ print(response)
 command = 'ls -l'
 result = MyUtils.execute_command(command)
 print(result)
-
-
-    # 处理手部动作识别
-    # with mp_hands.Hands(static_image_mode=False, max_num_hands=1) as hands:
-    #     # 转换图像颜色空间并执行手部动作识别
-    #     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #     results = hands.process(frame_rgb)
-    #
-    #     # 在图像上绘制手部动作识别结果
-    #     if results.multi_hand_landmarks:
-    #         for hand_landmarks in results.multi_hand_landmarks:
-    #             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
