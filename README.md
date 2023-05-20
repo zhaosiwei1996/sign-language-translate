@@ -28,3 +28,4 @@
 | other/train.py       | 模型训练         |
 | other/utils.py       | 工具类          |
 | venv                 | Python虚拟环境   |
+| test.py              | 代码测试         |
