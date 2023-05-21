@@ -37,7 +37,9 @@ dictConfig({
 app = Flask(__name__)
 socketio = SocketIO(app, compile=True)  # 开启socketio压缩
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
-CORS(app, resources=r'/*')
+# 设置跨域
+CORS(app, resources={r"/*": {"origins": "*"}})
+socketio.init_app(app, async_mode=None, cors_allowed_origins='*')
 
 
 @socketio.on('video_stream')
