@@ -37,8 +37,6 @@ dictConfig({
 app = Flask(__name__)
 # 开启socketio压缩
 socketio = SocketIO(app, compile=True)
-# 开启mediapipe日志
-logger = logging.getLogger("mediapipe")
 # 初始化mediapipe
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
 # 设置跨域
