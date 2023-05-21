@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from logging.config import dictConfig
 from utils import *
 import mediapipe as mp
@@ -36,6 +37,7 @@ dictConfig({
 app = Flask(__name__)
 socketio = SocketIO(app, compile=True)  # 开启socketio压缩
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
+CORS(app, resources=r'/*')
 
 
 @socketio.on('video_stream')
