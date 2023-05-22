@@ -36,29 +36,35 @@ dictConfig({
 )
 app = Flask(__name__)
 # 开启socketio压缩
+# open socketio gzip
 socketio = SocketIO(app, compile=True)
 # 初始化mediapipe
+# init mediapipe
 mp_hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
 # 设置跨域
+# set cors domain
 CORS(app, resources={r"/*": {"origins": "*"}})
 socketio.init_app(app, async_mode=None, cors_allowed_origins='*')
 
 
 @socketio.on('video_stream')
 def handle_video_stream(image_data):
-    # 将Base64编码的图像数据解码为图像
+    # Base64 Code transform to the image
     starttime = BaseUtils.get_timestamp()
     encoded_data = image_data.split(',')[1]
     nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
     frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     # 检测手部
+    # check heads
     results = mp_hands.process(frame)
     # 提取手部关键点
+    # hades check point
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             for landmark in hand_landmarks.landmark:
                 # 在图像上绘制关键点
+                # Drawing check points on the image
                 x, y = int(landmark.x * frame.shape[1]), int(landmark.y * frame.shape[0])
                 cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
 
@@ -66,16 +72,18 @@ def handle_video_stream(image_data):
     # cv2.imwrite('./optput.jpg', frame)
 
     # 将绘制了手部动作的图像转换为Base64编码
+    # image transform to the Base64 Code
     ret, buffer = cv2.imencode('.webp', frame)
     encoded_image = base64.b64encode(buffer)
     endtime = BaseUtils.get_timestamp()
-    app.logger.info("ip:%s,流程处理耗时:%s" % (BaseUtils.get_client_ip(), str(endtime - starttime)))
-    # 将结果返回给客户端
+    app.logger.info("client ip:%s,Processing time:%s" % (BaseUtils.get_client_ip(), str(endtime - starttime)))
+    # response to client
     socketio.emit('hand_gesture', encoded_image.decode('utf-8'))
 
 
 @app.route('/')
 def htmltest():
+    # test page
     return BaseUtils.send_default_info("hello world")
 
 
