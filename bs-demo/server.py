@@ -25,7 +25,7 @@ dictConfig({
     },
     "formatters": {
         "main_formatter": {
-            "format": "[%(levelname)s] %(asctime)s [%(funcName)s] %(name)s %(message)s"
+            "format": "[%(levelname)s] %(asctime)s [%(funcName)s] %(name)s-%(threadName)s %(message)s"
         }
     },
     "root": {
