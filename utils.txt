@@ -21,12 +21,6 @@ MyUtils.write_file('file.txt', 'Hello, World!')
 # 追加内容到文件
 MyUtils.append_to_file('file.txt', 'Append text')
 
-# 设置日志文件和级别
-MyUtils.setup_logging('app.log')
-
-# 输出日志
-MyUtils.log('This is a log message')
-
 # 获取当前系统类型
 system_type = MyUtils.get_system_type()
 print(system_type)
