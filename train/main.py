@@ -13,7 +13,7 @@ draw_util = mp.solutions.drawing_utils
 
 def worker():
     # 创建视频播放器
-    video_player = cv2.VideoCapture('./00377.mp4')
+    video_player = cv2.VideoCapture('D:\\signdata\\videos\\01157.mp4')
     # 运行脸部和手部关键点识别
     with mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5) as hands, \
             mp_face.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5) as face:
@@ -28,27 +28,32 @@ def worker():
             face_results = face.process(frame_rgb)
             # 运行手部关键点识别
             hands_results = hands.process(frame_rgb)
-
             # 绘制脸部关键点
             if face_results.multi_face_landmarks:
                 for face_landmarks in face_results.multi_face_landmarks:
+                    # print(face_landmarks.landmark)
                     draw_util.draw_landmarks(frame, face_landmarks, mp_face.FACEMESH_CONTOURS,
                                              draw_util.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
                                              draw_util.DrawingSpec(color=(0, 0, 255), thickness=1))
-
             # 绘制手部关键点
             if hands_results.multi_hand_landmarks:
                 for hand_landmarks in hands_results.multi_hand_landmarks:
+                    # print(face_landmarks.landmark)
                     draw_util.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS,
                                              draw_util.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=4),
                                              draw_util.DrawingSpec(color=(0, 0, 255), thickness=2))
-
             # 显示帧图像
             cv2.imshow('Video', frame)
-
             # 按下 'q' 键退出
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            if face_results.multi_face_landmarks == None:
+                continue
+            elif hands_results.multi_hand_landmarks == None:
+                continue
+            else:
+                BaseUtils.append_to_file('./1.txt', str(face_results.multi_face_landmarks))
+                BaseUtils.append_to_file('./2.txt', str(hands_results.multi_hand_landmarks))
 
     # 释放视频播放器和关闭窗口
     video_player.release()
