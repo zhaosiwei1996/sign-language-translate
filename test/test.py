@@ -1,46 +1,51 @@
 import cv2
 import mediapipe as mp
 
-# 初始化MediaPipe组件
+# 初始化 MediaPipe
 mp_drawing = mp.solutions.drawing_utils
-mp_holistic = mp.solutions.holistic
+mp_hands = mp.solutions.hands
+mp_face_mesh = mp.solutions.face_mesh
 
-# 加载Holistic模型
-mp_holistic_model = mp_holistic.Holistic(static_image_mode=False, min_detection_confidence=0.5,min_tracking_confidence=0.5)
+# 加载视频
+video_path = 'F:\\signdata\\America-dataset\\videos\\01157.mp4'
+cap = cv2.VideoCapture(video_path)
 
-# 打开摄像头
-cap = cv2.VideoCapture(0)
+# 初始化手部和脸部模型
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
 
-while True:
-    # 读取视频帧
-    ret, frame = cap.read()
+while cap.isOpened():
+    success, image = cap.read()
+    if not success:
+        break
 
-    # 转换图像颜色空间为RGB
-    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # 调整图像为 RGB 格式
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # 调用MediaPipe进行手部追踪和动作识别
-    results = mp_holistic_model.process(image)
+    # 处理手部姿势
+    results_hands = hands.process(image_rgb)
+    if results_hands.multi_hand_landmarks:
+        for hand_landmarks in results_hands.multi_hand_landmarks:
+            # 获取手部关键点坐标
+            for landmark in hand_landmarks.landmark:
+                x = int(landmark.x * image.shape[1])
+                y = int(landmark.y * image.shape[0])
+                # 在图像中绘制手部关键点
+                cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
 
-    # 绘制手部关键点和骨骼连接
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    if results.right_hand_landmarks:
-        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-    if results.left_hand_landmarks:
-        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+    # 处理脸部表情
+    results_face = face_mesh.process(image_rgb)
+    if results_face.multi_face_landmarks:
+        for face_landmarks in results_face.multi_face_landmarks:
+            # 获取脸部关键点坐标
+            for landmark in face_landmarks.landmark:
+                x = int(landmark.x * image.shape[1])
+                y = int(landmark.y * image.shape[0])
+                # 在图像中绘制脸部关键点
+                cv2.circle(image, (x, y), 2, (255, 0, 0), -1)
 
-    # 获取手部动作识别结果
-    if results.right_hand_landmarks or results.left_hand_landmarks:
-        # 根据需要处理手部动作识别结果
-        # 这里仅打印出右手和左手的关键点坐标
-        if results.right_hand_landmarks:
-            print(results.right_hand_landmarks.landmark)
-        if results.left_hand_landmarks:
-            print(results.left_hand_landmarks.landmark)
-
-    # 显示图像窗口
-    cv2.imshow('MediaPipe Hand Action Detection', image)
-
-    # 按下'q'键退出循环
+    # 显示结果
+    cv2.imshow('Video', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
