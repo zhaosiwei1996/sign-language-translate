@@ -8,8 +8,6 @@ import logging
 import os
 import config
 
-# 初始化MediaPipe的绘图工具
-# draw_util = mp.solutions.drawing_utils
 # 手部检测相关
 mp_hands = mp.solutions.hands
 # 人脸检测相关
@@ -22,19 +20,13 @@ face = mp_face.FaceMesh(static_image_mode=config.static_image_mode, refine_landm
                         min_tracking_confidence=config.min_tracking_confidence)
 
 
-def testdef(vidfile):
-    logging.info(vidfile.split(',')[0])
-    logging.info(vidfile)
-    logging.info(vidfile.split(r'\\')[4].split('.mp4')[0])
-
-
 def worker(vidfile):
     vid = vidfile.split(r'\\')[4].split('.mp4')[0]
     vidword = vidfile.split(',')[0]
     vidfile = vidfile.split(',')[1]
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     mysql_tool.connect()
-    logging.info('video:{},开始分析'.format(vidfile))
+    logging.info('video:{},start analysis'.format(vidfile))
     # 创建视频播放器
     video_player = cv2.VideoCapture(vidfile)
     # 开始分析计时
@@ -42,7 +34,7 @@ def worker(vidfile):
     while video_player.isOpened():
         # 逐帧读取视频
         ret, frame = video_player.read()
-        # # 跳过空帧
+        # 跳过空帧
         if not ret:
             break
         # 将图像从BGR转换为RGB
@@ -51,7 +43,7 @@ def worker(vidfile):
         face_results = face.process(frame_rgb)
         # 运行手部关键点识别
         hands_results = hands.process(frame_rgb)
-        # 绘制脸部关键点
+        # 提取脸部关键点
         if face_results.multi_face_landmarks:
             for face_landmarks in face_results.multi_face_landmarks:
                 for landmark in face_landmarks.landmark:
@@ -59,7 +51,7 @@ def worker(vidfile):
                             'y_landmark': landmark.y, 'z_landmark': landmark.z}
                     # logging.info("写入数据:{}".format(data))
                     mysql_tool.insert(vidword, data)
-        # 绘制手部关键点
+        # 提取手部关键点
         if hands_results.multi_hand_landmarks:
             for hand_landmarks in hands_results.multi_hand_landmarks:
                 for landmark in hand_landmarks.landmark:
@@ -73,49 +65,48 @@ def worker(vidfile):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     endtime = BaseUtils.get_timestamp()
-    logging.info('video:{},分析完成,耗时:{}'.format(vidfile, str(endtime - starttime)))
+    logging.info('video:{},done analysis,time-consuming:{}'.format(vidfile, str(endtime - starttime)))
     # 释放视频播放器和关闭窗口
     video_player.release()
-    # cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
     mysql_tool.close()
 
 
 if __name__ == '__main__':
-    # 建表
-    mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
+    foundvidfilecount = 0
+    notfoundvidfilecount = 0
     # 线程列表
     threadlist = []
+    # 连接数据库
+    mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     # 并发线程数设置
     pool = multiprocessing.Pool(processes=config.processes)
-
     # 单循环单词list
-    for word in open('./1-100word.txt'):
-        # 提取视频id,生成列表加入线程队列
+    for word in open(config.wordlistfile):
+        # 建表
         mysql_tool.connect()
         mysql_tool.create_table('t_{}'.format(word.replace('\n', '')), config.createtablesql)
         mysql_tool.close()
         with open(config.worddir, 'r') as f:
             for i in (BaseUtils.string_to_json(f.read())):
-                # if i['gloss'] == config.gloss:
                 if i['gloss'] == word.replace('\n', ''):
                     for vid in i['instances']:
-                        # videofile = r"t_{},{}{}.mp4".format(config.gloss, config.viddir, vid['video_id'])
                         videofile = r"t_{},{}{}.mp4".format(word.replace('\n', ''), config.viddir, vid['video_id'])
-                        # 检查视频文件是否存在,存在添加到existsvidfile list,找不到直接跳过
+                        # 检查视频文件是否存在,存在添加到线程列表,找不到直接跳过
                         if os.path.exists(videofile.split(',')[1]):
-                            logging.info('videofile:{},存在'.format(videofile))
+                            logging.info('videofile:{},found'.format(videofile))
                             threadlist.append(videofile)
+                            foundvidfilecount += 1
                         else:
-                            logging.error('videofile:{},不存在'.format(videofile))
-
-    logging.info("found vidfile:{}".format(threadlist))
+                            logging.error('videofile:{},not found'.format(videofile))
+                            notfoundvidfilecount += 1
+    logging.info("found vidfile count:{}".format(foundvidfilecount))
+    logging.info("not found vidfile count:{}".format(notfoundvidfilecount))
 
     # 定义任务列表
     tasks = [i for i in threadlist]
     # 使用map方法并发执行任务
     pool.map(worker, tasks)
-    # pool.map(testdef, tasks)
     # 关闭进程池
     pool.close()
     pool.join()
-    

@@ -4,7 +4,7 @@ logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(asctime)s [%(
 logger = logging.getLogger(__name__)
 
 # 指定英语单词
-gloss = "yes"
+wordlistfile = "./1-100word.txt"
 
 # 数据文件位置
 viddir = r"F:\\signdata\\WLASL\\videos\\"
