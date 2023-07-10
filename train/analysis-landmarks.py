@@ -7,6 +7,7 @@ import multiprocessing
 import logging
 import os
 import config
+import sys
 
 # 手部检测相关
 mp_hands = mp.solutions.hands
@@ -100,6 +101,10 @@ if __name__ == '__main__':
                         else:
                             logging.error('videofile:{},not found'.format(videofile))
                             notfoundvidfilecount += 1
+
+    if notfoundvidfilecount > 0:
+        sys.exit(1)
+
     logging.info("found vidfile count:{}".format(foundvidfilecount))
     logging.info("not found vidfile count:{}".format(notfoundvidfilecount))
 

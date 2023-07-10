@@ -143,6 +143,7 @@ class MySQLTool:
         query = f"SELECT {columns} FROM {table}"
         if condition:
             query += f" WHERE {condition}"
+        print(query)
         return self.execute_query(query)
 
     def create_table(self, table_name, columns):

@@ -13,7 +13,8 @@ viddir = r"F:\\signdata\\WLASL\\videos\\"
 worddir = r"F:\\signdata\\WLASL\\info.json"
 
 # mysql配置
-dbhost = "192.168.3.110"
+# dbhost = "192.168.3.110"
+dbhost = "localhost"
 dbuser = "zhaosiwei"
 dbpassword = "111111"
 dbname = "trainlandmark"
