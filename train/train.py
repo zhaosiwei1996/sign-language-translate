@@ -50,7 +50,7 @@ def train():
                   metrics=['accuracy'])
     model.summary()
     # 模型训练
-    model.fit(X_train, y_train, epochs=50, batch_size=20, callbacks=[tensorboard_callback])
+    model.fit(X_train, y_train, epochs=50, batch_size=30, callbacks=[tensorboard_callback])
     # 模型保存
     model.save('./sign-language-model.h5')
     # 验证模型
