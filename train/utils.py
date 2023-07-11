@@ -150,4 +150,11 @@ class MySQLTool:
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
         # return self.cursor.execute(query)
         return self.execute_query(query)
-        # self.connection.commit()
+
+    def insert_many(self, table, data):
+        with self.connection.cursor() as cursor:
+            placeholders = ', '.join(['%s'] * len(data[0]))
+            columns = ', '.join(data[0].keys())
+            sql = f"INSERT INTO `{table}` ({columns}) VALUES ({placeholders})"
+            cursor.executemany(sql, [tuple(d.values()) for d in data])
+        self.connection.commit()
