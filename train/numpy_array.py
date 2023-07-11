@@ -24,10 +24,11 @@ if __name__ == '__main__':
     # 数据库连接
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     mysql_tool.connect()
-    # 遍历数据库所有表,xyz数据提取出来
+    # 遍历数据库,xyz数据提取出来
     queryselect = mysql_tool.select("t_go", "x_landmark,y_landmark,z_landmark", "both_hands=1")
     for resp1 in queryselect:
         landmarks.append(list(resp1))
     mysql_tool.close()
-    print(np.array(landmarks))
-    np.save('./go.npy', np.array(landmarks))
+    print(landmarks)
+    # print(np.array(landmarks))
+    # np.save('./go.npy', np.array(landmarks))

@@ -30,7 +30,7 @@ def train(labels, landmarks):
     # 模型训练
     model.fit(X_train, y_train, epochs=10)
     # 模型保存
-    model.save('./sign-language-model.h5')
+    model.save('./sign-language-model.h5_20230710')
     # 验证模型
     model.evaluate(X_test, y_test)
 

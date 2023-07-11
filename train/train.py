@@ -3,6 +3,7 @@
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
@@ -25,22 +26,19 @@ def train():
     # 转换为 numpy 数组
     data = np.array(data)
     labels = np.array(labels)
-    print(data.shape)
     label_encoder = LabelEncoder()
     encoded_labels = label_encoder.fit_transform(labels)
-    num_classes = len(set(labels))
     X_train, X_test, y_train, y_test = train_test_split(data, encoded_labels, test_size=0.2, random_state=42)
-    # 建立模型
+
     model = tf.keras.Sequential([
-        layers.Flatten(input_shape=(131, data.shape[0], 3)),
-        layers.Dense(64, activation='relu'),
-        layers.Dense(num_classes, activation='softmax')
+        layers.Flatten(input_shape=(data.shape[0],)),
+        layers.Dense(63, activation='relu'),
+        layers.Dense(len(set(labels)), activation='softmax')
     ])
-    # model = Sequential([
-    #     Dense(128, activation='relu', input_shape=(None, data.shape[0], 3)),
-    #     Dense(64, activation='relu'),
-    #     Dense(num_classes, activation='softmax'),
-    # ])
+    # model = Sequential()
+    # model.add(Dense(32, input_dim=63, activation='relu'))  # 输入层
+    # model.add(Dense(64, activation='relu'))  # 隐藏层
+    # model.add(Dense(data.shape[1], activation='softmax'))
 
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -50,11 +48,13 @@ def train():
                   metrics=['accuracy'])
     model.summary()
     # 模型训练
-    model.fit(X_train, y_train, epochs=50, batch_size=30, callbacks=[tensorboard_callback])
+    model.fit(X_train, y_train, epochs=50, batch_size=64, callbacks=[tensorboard_callback])
     # 模型保存
     model.save('./sign-language-model.h5')
     # 验证模型
-    model.evaluate(X_test, y_test)
+    # 评估模型
+    _, accuracy = model.evaluate(X_test, y_test)
+    print('Accuracy: %.2f' % (accuracy * 100))
 
 
 if __name__ == '__main__':

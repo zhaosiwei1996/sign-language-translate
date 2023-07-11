@@ -7,10 +7,12 @@ logger = logging.getLogger(__name__)
 wordlistfile = "./1-100word.txt"
 
 # 数据文件位置
-viddir = r"C:\\Users\\c0117054\\archive\\WLASL\\videos\\"
+viddir = r"F:\\signdata\\\WLASL\\videos\\"
+# 目录分割
+splitnum = 4
 
 # 数据说明文件位置
-worddir = r"C:\\Users\\c0117054\\archive\\WLASL\\info.json"
+worddir = r"F:\\signdata\\WLASL\\info.json"
 
 # mysql配置
 # dbhost = "192.168.3.110"
@@ -22,8 +24,10 @@ dbname = "trainlandmark"
 # 自动建表语句
 createtablesql = """id int auto_increment NOT NULL COMMENT '自增id',
 	videoid int NOT NULL COMMENT '视频id',
+	video_total_frames int NOT NULL COMMENT '视频总帧数',
 	face int NULL COMMENT '1代表为脸,0为不是',
 	both_hands int NULL COMMENT '1代表为手,0为不是',
+	
 
     wrist_x float NOT NULL COMMENT 'wrist_x_landmark',
     wrist_y float NOT NULL COMMENT 'wrist_y_landmark',
@@ -125,7 +129,7 @@ hands_nameslist = ['wrist', 'thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip', '
                    'ring_finger_tip', 'pinky_mcp', 'pinky_pip', 'pinky_dip', 'pinky_tip']
 
 # 并行分析数
-processes = 8
+processes = 12
 
 # mediapipe配置
 # 全局配置
