@@ -4,11 +4,15 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from pathlib import Path
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import pickle
 import datetime
+
+param_dir = Path("./params")
+param_dir.mkdir(parents=True, exist_ok=True)
 
 data = []
 labels = []
@@ -81,6 +85,7 @@ plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
+plt.savefig(str(param_dir) + "/Time.pdf")
 plt.legend()
 plt.show()
 
@@ -89,5 +94,6 @@ plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
+plt.savefig(str(param_dir) + "/ACC.pdf")
 plt.legend()
 plt.show()
