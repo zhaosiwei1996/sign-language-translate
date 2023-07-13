@@ -113,6 +113,7 @@ class MySQLTool:
             self.connection.close()
 
     def execute_query(self, query, params=None):
+        # print(query)
         self.cursor.execute(query, params)
         result = self.cursor.fetchall()
         return result
@@ -140,14 +141,14 @@ class MySQLTool:
         return self.execute_update(query, tuple(data.values()))
 
     def select(self, table, columns='*', condition=None):
-        query = f"SELECT {columns} FROM {table}"
+        query = f"SELECT {columns} FROM {'`'+table+'`'}"
         if condition:
             query += f" WHERE {condition}"
         print(query)
         return self.execute_query(query)
 
     def create_table(self, table_name, columns):
-        query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
+        query = f"CREATE TABLE IF NOT EXISTS {'`'+table_name+'`'} ({columns})"
         # return self.cursor.execute(query)
         return self.execute_query(query)
 

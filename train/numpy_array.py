@@ -11,24 +11,17 @@ if __name__ == '__main__':
     # 循环内extend list
     single_frame_landmarks = []
     # 100个单词list
-    # wordlist = ['accident', 'africa', 'all', 'apple', 'basketball', 'bed', 'before', 'bird', 'birthday', 'black',
-    #             'blue', 'book', 'bowling', 'brown', 'but', 'can', 'candy', 'chair', 'change', 'cheat', 'city',
-    #             'clothes', 'color', 'computer', 'cook', 'cool', 'corn', 'cousin', 'cow', 'dance', 'dark', 'deaf',
-    #             'decide', 'doctor', 'dog', 'drink', 'eat', 'enjoy', 'family', 'fine', 'finish', 'fish', 'forget',
-    #             'full', 'give', 'go', 'graduate', 'hat', 'hearing', 'help', 'hot', 'how', 'jacket', 'kiss', 'language',
-    #             'last', 'later', 'letter', 'like', 'man', 'many', 'medicine', 'meet', 'mother', 'need', 'no', 'now',
-    #             'orange', 'paint', 'paper', 'pink', 'pizza', 'play', 'pull', 'purple', 'right', 'same', 'school',
-    #             'secretary', 'shirt', 'short', 'son', 'study', 'table', 'tall', 'tell', 'thanksgiving', 'thin',
-    #             'thursday', 'time', 'walk', 'want', 'what', 'white', 'who', 'woman', 'work', 'wrong', 'year', 'yes']
-    wordlist = ['book', 'computer', 'drink', 'go']
+    wordlist = ['go']
+    # wordlist = ['book', 'computer', 'drink', 'go']
     # 数据库连接
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     mysql_tool.connect()
     # 遍历数据库,xyz数据提取出来
-    queryselect = mysql_tool.select("t_go", "x_landmark,y_landmark,z_landmark", "both_hands=1")
-    for resp1 in queryselect:
-        landmarks.append(list(resp1))
-    mysql_tool.close()
+    for word in wordlist:
+        query = mysql_tool.select("t_{}".format(word),
+                                  "wrist_x, wrist_y, wrist_z, thumb_cmc_x, thumb_cmc_y, thumb_cmc_z, thumb_mcp_x, thumb_mcp_y, thumb_mcp_z, thumb_ip_x, thumb_ip_y, thumb_ip_z, thumb_tip_x, thumb_tip_y, thumb_tip_z, index_finger_mcp_x, index_finger_mcp_y, index_finger_mcp_z, index_finger_pip_x, index_finger_pip_y, index_finger_pip_z, index_finger_dip_x, index_finger_dip_y, index_finger_dip_z, index_finger_tip_x, index_finger_tip_y, index_finger_tip_z, middle_finger_mcp_x, middle_finger_mcp_y, middle_finger_mcp_z, middle_finger_pip_x, middle_finger_pip_y, middle_finger_pip_z, middle_finger_dip_x, middle_finger_dip_y, middle_finger_dip_z, middle_finger_tip_x, middle_finger_tip_y, middle_finger_tip_z, ring_finger_mcp_x, ring_finger_mcp_y, ring_finger_mcp_z, ring_finger_pip_x, ring_finger_pip_y, ring_finger_pip_z, ring_finger_dip_x, ring_finger_dip_y, ring_finger_dip_z, ring_finger_tip_x, ring_finger_tip_y, ring_finger_tip_z, pinky_mcp_x, pinky_mcp_y, pinky_mcp_z, pinky_pip_x, pinky_pip_y, pinky_pip_z, pinky_dip_x, pinky_dip_y, pinky_dip_z, pinky_tip_x, pinky_tip_y, pinky_tip_z")
+        for resp in query:
+            landmarks.append(list(resp))
+
     print(landmarks)
-    # print(np.array(landmarks))
-    # np.save('./go.npy', np.array(landmarks))
+    np.save('npyfile/sourcefile/go.npy', np.array(landmarks))

@@ -5,23 +5,30 @@ import logging
 import config
 
 if __name__ == '__main__':
+    countlist = []
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
-    for word in open('./1-100word.txt'):
-        # 提取视频id,生成列表加入线程队列
-        with open(config.worddir, 'r') as f:
-            for i in (BaseUtils.string_to_json(f.read())):
-                if i['gloss'] == word.replace('\n', ''):
-                    for vid in i['instances']:
-                        mysql_tool.connect()
-                        try:
-                            query = mysql_tool.select("t_{}".format(i['gloss']), "count(*)",
-                                                      "videoid={}".format(vid['video_id']))
-                        except Exception as e:
-                            logging.error(e)
-                        else:
-                            for count in query:
-                                for counttwo in count:
-                                    if counttwo == 0:
-                                        logging.info(
-                                            "word:{},vid:{},count:{}".format(i['gloss'], vid['video_id'], counttwo))
+    for word in open('./1-500.txt'):
+        # with open(config.worddir, 'r') as f:
+        # for i in (BaseUtils.string_to_json(f.read())):
+        #     if i['gloss'] == word.replace('\n', ''):
+        #         for vid in i['instances']:
+        words = word.replace('\n', '')
+        try:
+            mysql_tool.connect()
+            query = mysql_tool.execute_query(
+                "SELECT COUNT(DISTINCT videoid) as count FROM" + " `" + f"t_{words}`")
+            # query = mysql_tool.select(f"{'t_' + i['gloss']}", "count(*)",
+            #                           "videoid={}".format(vid['video_id']))
+        except Exception as e:
+            logging.error(e)
+        else:
+            for count in query:
+                for counttwo in count:
+                    # print(counttwo)
+                    countlist.append(counttwo)
+                    logging.info("word:{},count:{}".format(word.replace('\n', ''), counttwo))
+            # if counttwo == 0:
+            #     logging.info(
+            #         "word:{},vid:{},count:{}".format(i['gloss'], vid['video_id'], counttwo))
+    # print(list.sort(countlist))
     mysql_tool.close()

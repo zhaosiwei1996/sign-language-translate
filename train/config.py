@@ -3,8 +3,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(asctime)s [%(funcName)s]-%(process)d %(message)s')
 logger = logging.getLogger(__name__)
 
-# 指定英语单词
-wordlistfile = "./1-100word.txt"
+# 指定英语单词list
+wordlistfile = "./401-500word.txt"
 
 # 数据文件位置
 viddir = r"F:\\signdata\\\WLASL\\videos\\"
@@ -129,7 +129,7 @@ hands_nameslist = ['wrist', 'thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip', '
                    'ring_finger_tip', 'pinky_mcp', 'pinky_pip', 'pinky_dip', 'pinky_tip']
 
 # 并行分析数
-processes = 12
+processes = 14
 
 # mediapipe配置
 # 全局配置

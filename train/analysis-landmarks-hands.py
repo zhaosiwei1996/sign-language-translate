@@ -8,10 +8,13 @@ import logging
 import os
 import config
 import sys
+
 # 手部检测相关
 mp_hands = mp.solutions.hands
 # 脸部和手部关键点识别
-hands = mp_hands.Hands(static_image_mode=config.static_image_mode, max_num_hands=config.max_num_hands,min_detection_confidence=config.min_detection_confidence)
+hands = mp_hands.Hands(static_image_mode=config.static_image_mode, max_num_hands=config.max_num_hands,
+                       min_detection_confidence=config.min_detection_confidence)
+
 
 def mysqlsave(tablename, alldata):
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
@@ -20,12 +23,11 @@ def mysqlsave(tablename, alldata):
         mysql_tool.insert_many(tablename, alldata)
     except Exception as e:
         logging.error(e)
-        logging.error("table:{},data:{}".format(tablename, alldata))
+        logging.error("table:{}".format(tablename))
     mysql_tool.close()
 
 
 def worker(vidfile):
-
     alldata = []
     data_points = {}
     vid = vidfile.split(r'\\')[config.splitnum].split('.mp4')[0]
@@ -65,6 +67,7 @@ def worker(vidfile):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         # 数据保存
+    # print(alldata)
     mysqlsave(vidword, alldata)
     endtime = BaseUtils.get_timestamp()
     logging.info('video:{},done analysis,time-consuming:{}'.format(vidfile, str(endtime - starttime)))
@@ -77,19 +80,22 @@ if __name__ == '__main__':
     notfoundvidfilecount = 0
     # 线程列表
     threadlist = []
+    # threadlist = [r't_hat,F:\\signdata\\WLASL\\videos\\26712.mp4',
+    #               r't_hat,F:\\signdata\\WLASL\\videos\\28206.mp4', ]
     # 需要分析的单词list
     wordlist = []
     # 连接数据库
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     # 并发线程数设置
     pool = multiprocessing.Pool(processes=config.processes)
-    # 单循环单词list
+    # # 单循环单词list
     for wordname in open(config.wordlistfile):
         wordlist.append(wordname)
     # 建表
     for wordname in wordlist:
         mysql_tool.connect()
-        mysql_tool.create_table('t_{}'.format(wordname.replace('\n', '')), config.createtablesql)
+        logging.info("create table:{}".format(wordname.replace('\n', '')))
+        mysql_tool.create_table("t_{}".format(wordname.replace('\n', '')), config.createtablesql)
         mysql_tool.close()
     # 查找对应的数据集是否存在
     for wordname in wordlist:
