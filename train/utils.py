@@ -104,7 +104,7 @@ class MySQLTool:
             password=self.password,
             database=self.database
         )
-        self.cursor = self.connection.cursor()
+        self.cursor = self.connection.cursor(dictionary=True)
 
     def close(self):
         if self.cursor:
