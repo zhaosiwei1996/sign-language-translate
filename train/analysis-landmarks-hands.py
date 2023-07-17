@@ -7,15 +7,14 @@ import multiprocessing
 import logging
 import os
 import config
-import sys
 
-# 手部检测相关
+# init mediapipe hands model
 mp_hands = mp.solutions.hands
-# 脸部和手部关键点识别
 hands = mp_hands.Hands(static_image_mode=config.static_image_mode, max_num_hands=config.max_num_hands,
                        min_detection_confidence=config.min_detection_confidence)
 
 
+# to mysql save data
 def mysqlsave(tablename, alldata):
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     mysql_tool.connect()
@@ -27,6 +26,7 @@ def mysqlsave(tablename, alldata):
     mysql_tool.close()
 
 
+# thread worker
 def worker(vidfile):
     alldata = []
     data_points = {}
@@ -34,26 +34,27 @@ def worker(vidfile):
     vidword = vidfile.split(',')[0]
     vidfile = vidfile.split(',')[1]
     logging.info('video:{},start analysis'.format(vidfile))
-    # 创建视频播放器
+    # create video play
     video_player = cv2.VideoCapture(vidfile)
     total_frames = int(video_player.get(cv2.CAP_PROP_FRAME_COUNT))
-    # 开始分析计时
+    # start analysis time
     starttime = BaseUtils.get_timestamp()
     while video_player.isOpened():
-        # 逐帧读取视频
+        # while True frame
         ret, frame = video_player.read()
-        # 跳过空帧
+        # skip not ret
         if not ret:
             break
-        # 将图像从BGR转换为RGB
+        # BGR to RGB
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # 运行手部关键点识别
+        # start hands analysis
         hands_results = hands.process(frame_rgb)
         hand_landmarks = hands_results.multi_hand_landmarks
-        # 提取手部关键点
+        # analysis hands xyz
         if hand_landmarks is not None:
             for landmark in hand_landmarks:
                 for i in range(len(config.hands_nameslist)):
+                    # 21 hands xyz analysis add dist
                     data_points.update({
                         'videoid': vid, 'video_total_frames': total_frames, 'face': 0, 'both_hands': 1,
                         config.hands_nameslist[i] + '_x': landmark.landmark[i].x,
@@ -61,43 +62,40 @@ def worker(vidfile):
                         config.hands_nameslist[i] + '_z': landmark.landmark[i].z,
                     })
                     alldata.append(data_points)
-            # 显示帧图像
-            # cv2.imshow('Video', frame)
-            # 退出
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-        # 数据保存
     # print(alldata)
+    # to mysql save
     mysqlsave(vidword, alldata)
     endtime = BaseUtils.get_timestamp()
     logging.info('video:{},done analysis,time-consuming:{}'.format(vidfile, str(endtime - starttime)))
-    # 释放视频播放器和关闭窗口
+    # break video windows
     video_player.release()
 
 
 if __name__ == '__main__':
     foundvidfilecount = 0
     notfoundvidfilecount = 0
-    # 线程列表
+    # thread list
     threadlist = []
     # threadlist = [r't_hat,F:\\signdata\\WLASL\\videos\\26712.mp4',
     #               r't_hat,F:\\signdata\\WLASL\\videos\\28206.mp4', ]
-    # 需要分析的单词list
+    # analysis word list
     wordlist = []
-    # 连接数据库
+    # connect mysql
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
-    # 并发线程数设置
+    # thread number
     pool = multiprocessing.Pool(processes=config.processes)
-    # # 单循环单词list
+    # analysis word add list
     for wordname in open(config.wordlistfile):
         wordlist.append(wordname)
-    # 建表
+    # create mysql tables
     for wordname in wordlist:
         mysql_tool.connect()
         logging.info("create table:{}".format(wordname.replace('\n', '')))
         mysql_tool.create_table("t_{}".format(wordname.replace('\n', '')), config.createtablesql)
         mysql_tool.close()
-    # 查找对应的数据集是否存在
+    # search files. searchd files to thread list
     for wordname in wordlist:
         with open(config.worddir, 'r') as f:
             for i in (BaseUtils.string_to_json(f.read())):
@@ -116,10 +114,10 @@ if __name__ == '__main__':
     logging.info("found vidfile count:{}".format(foundvidfilecount))
     logging.info("not found vidfile count:{}".format(notfoundvidfilecount))
 
-    # 定义任务列表
+    # for threadlist
     tasks = [i for i in threadlist]
-    # 使用map方法并发执行任务
+    # start worker
     pool.map(worker, tasks)
-    # 关闭进程池
+    # close thread pool
     pool.close()
     pool.join()
