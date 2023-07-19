@@ -28,10 +28,9 @@ def modelload():
     #     continue
     #
     predicted_label = labels_dict[predicted_class]
-    predicted_text = '''word:{}'''.format(predicted_label)
     logging.info("Predicted_class:{},Predicted_label:{},Preprocess:{}".format(predicted_class, predicted_label,
                                                                               predicted_prob_percentage))
-    return predicted_text
+    return predicted_label, predicted_prob_percentage
 
 
 # api interface
@@ -44,15 +43,21 @@ async def landmarks_data(request):
     # print(landmark_list)
     frame_data.append(np.array(landmark_list).flatten())
     if len(frame_data) == 25:
-        predicted_text = modelload()
-        logging.info(predicted_text)
-        return response.json(BaseUtils.send_default_info(predicted_text))
+        starttime = BaseUtils.get_timestamp()
+        predicted_label, predicted_prob_percentage = modelload()
+        endtime = BaseUtils.get_timestamp()
+        BaseUtils.save_business_logs(request.ip, request.path, predicted_label, endtime - starttime,
+                                     predicted_prob_percentage)
+
+        return response.json(BaseUtils.send_default_info(200, request.ip, request.path, predicted_label))
+    else:
+        return response.json(BaseUtils.send_default_info(200, request.ip, request.path, "please wait..."))
 
 
 # test api interface
 @app.get("/")
 async def hello_world(request):
-    return response.json(BaseUtils.send_default_info("hello world"))
+    return response.json(BaseUtils.send_default_info(200, request.ip, request.path, "hello world"))
 
 
 if __name__ == '__main__':

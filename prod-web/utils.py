@@ -6,12 +6,14 @@ import subprocess
 import csv
 import socket
 import mysql.connector
+import datetime
+import config
 
 
 class BaseUtils:
     @staticmethod
     def get_timestamp():
-        return int(time.time())
+        return int(time.time() * 1000)
 
     @staticmethod
     def json_to_string(data):
@@ -83,9 +85,21 @@ class BaseUtils:
             writer.writerows(data)
 
     @staticmethod
-    def send_default_info(data):
-        data = '''{"timestamp":%s,"respone":"%s"}''' % (int(time.time()), data)
+    # access logs
+    def send_default_info(httpcode, clientip, uri, respone):
+        data = '''{"httpcode":%s,"clientip":"%s","uri":"%s","respone":"%s","timestamp":%s}''' % (
+            httpcode, clientip, uri, respone, int(time.time() * 1000))
+        with open(config.accesslogspath, 'a') as file:
+            file.write(data + '\n')
         return json.loads(data)
+
+    @staticmethod
+    # business logs
+    def save_business_logs(clientip, uri, word, timecoust, preprocess):
+        data = '''{"clientip":"%s","uri":"%s","word":"%s","preprocess":%s,"timecost":%s,"timestamp":%s}''' % (
+            clientip, uri, word, preprocess, timecoust, int(time.time() * 1000))
+        with open(config.businesslogspath, 'a') as file:
+            file.write(data + '\n')
 
 
 ############################
