@@ -8,7 +8,7 @@ import pickle
 import config  # config file
 import logging
 
-app = Sanic("sign-language")
+app = Sanic("sign-language-translator")
 CORS(app)
 # load model
 frame_data = collections.deque(maxlen=25)
@@ -23,14 +23,11 @@ def modelload():
     model_input = np.expand_dims(np.array(frame_data).T, axis=0)
     predictions = model.predict(model_input)
     predicted_class = np.argmax(predictions)
-    predicted_prob_percentage = predictions[0][predicted_class] * 100
-    # if predicted_prob_percentage < 100:
-    #     continue
-    #
+    probability = predictions[0][predicted_class] * 100
     predicted_label = labels_dict[predicted_class]
-    logging.info("Predicted_class:{},Predicted_label:{},Preprocess:{}".format(predicted_class, predicted_label,
-                                                                              predicted_prob_percentage))
-    return predicted_label, predicted_prob_percentage
+    logging.info("Predicted_class:{},Predicted_label:{},probability:{}".format(predicted_class, predicted_label,
+                                                                               probability))
+    return predicted_label, probability
 
 
 # api interface
@@ -40,14 +37,13 @@ async def landmarks_data(request):
     landmark_list = []
     for landmarks in data['landmarks']:
         landmark_list.append([landmarks['x'], landmarks['y'], landmarks['z']])
-    # print(landmark_list)
     frame_data.append(np.array(landmark_list).flatten())
     if len(frame_data) == 25:
         starttime = BaseUtils.get_timestamp()
-        predicted_label, predicted_prob_percentage = modelload()
+        predicted_label, probability = modelload()
         endtime = BaseUtils.get_timestamp()
         BaseUtils.save_business_logs(request.ip, request.path, predicted_label, endtime - starttime,
-                                     predicted_prob_percentage)
+                                     probability)
 
         return response.json(BaseUtils.send_default_info(200, request.ip, request.path, predicted_label))
     else:

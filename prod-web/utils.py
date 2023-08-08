@@ -96,7 +96,7 @@ class BaseUtils:
     @staticmethod
     # business logs
     def save_business_logs(clientip, uri, word, timecoust, preprocess):
-        data = '''{"clientip":"%s","uri":"%s","word":"%s","preprocess":%s,"timecost":%s,"timestamp":%s}''' % (
+        data = '''{"clientip":"%s","uri":"%s","word":"%s","probability":%s,"timecost":%s,"timestamp":%s}''' % (
             clientip, uri, word, preprocess, timecoust, int(time.time() * 1000))
         with open(config.businesslogspath, 'a') as file:
             file.write(data + '\n')
