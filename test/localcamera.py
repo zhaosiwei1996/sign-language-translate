@@ -19,9 +19,9 @@ hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_c
 # open camera
 cap = cv2.VideoCapture(0)
 # load model
-model = tf.keras.models.load_model('./sign-language-model.h5_1000fit_9994_058')
+model = tf.keras.models.load_model('../train/sign-language-model.h5_1000fit_9994_058')
 # load labal
-with open('./sign-language-model.pkl', 'rb') as f:
+with open('../train/sign-language-model.pkl', 'rb') as f:
     labels_dict = pickle.load(f)
 
 while True:
@@ -52,15 +52,16 @@ while True:
                 predicted_prob_percentage = predictions[0][predicted_class] * 100
                 # respones analysis
                 predicted_label = labels_dict[predicted_class]
-                predicted_text = '''word:{},Preprocess:{}'''.format(predicted_label, predicted_prob_percentage)
+                # predicted_text = '''word:{},probability:{}'''.format(predicted_label, predicted_prob_percentage)
+                predicted_text = '''{}'''.format(predicted_label)
 
                 logging.info(
-                    "Predicted_class:{},Predicted_label:{},Preprocess:{}".format(predicted_class, predicted_label,
+                    "Predicted_class:{},Predicted_label:{},probability:{}".format(predicted_class, predicted_label,
                                                                                  predicted_prob_percentage))
                 # put image
                 cv2.putText(frame, predicted_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     # open camera windows
-    cv2.imshow('Hand Gesture Recognition', frame)
+    cv2.imshow('cv2', frame)
     # input q exit
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

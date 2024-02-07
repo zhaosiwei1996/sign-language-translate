@@ -128,7 +128,11 @@
     // wants to activate it.
     if (hasGetUserMedia()) {
         enableWebcamButton = document.getElementById("webcamButton");
-        enableWebcamButton.addEventListener("click", enableCam);
+		enableWebcamButton.addEventListener("click", function() {
+			console.log("Button was clicked");
+		    enableWebcamButton.addEventListener("click", enableCam);
+		});
+
     } else {
         console.warn("getUserMedia() is not supported by your browser");
     }
@@ -185,7 +189,7 @@
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         if (results.landmarks) {
             for (const landmarks of results.landmarks) {
-                fetch('http://localhost:5000/api/landmark', {
+                fetch('https://192.168.3.76/api/landmark', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -194,7 +198,7 @@
                 }).then(response => response.json())
                     .then(data => {
                         const resultElement = document.getElementById('track-text');
-                        resultElement.innerHTML = `<h1>${JSON.stringify(data)}</h1>`;
+                        resultElement.innerHTML = `<h1>${JSON.stringify(data.respone)}</h1>\n<h1>${JSON.stringify(data.timestamp)}</h1>`;
                     })
                     .catch((error) => {
                         console.error('Error:', error);
