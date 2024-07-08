@@ -1,3 +1,5 @@
+import logging
+
 import orjson as json
 import time
 import os
@@ -112,11 +114,29 @@ class MySQLTool:
         if self.connection:
             self.connection.close()
 
-    def execute_query(self, query, params=None):
-        # print(query)
-        self.cursor.execute(query, params)
-        result = self.cursor.fetchall()
-        return result
+    # def execute_query(self, query, params=None):
+    #     print(query)
+    #     self.cursor.execute(query, params)
+    #     result = self.cursor.fetchall()
+    #     return result
+    def execute_query(self, query, params=None, multi=False):
+        try:
+            if multi:
+                results = []
+                for result in self.cursor.execute(query, params=params, multi=True):
+                    if result.with_rows:
+                        results.append(result.fetchall())
+                return results
+            else:
+                self.cursor.execute(query, params=params)
+                if self.cursor.with_rows:
+                    return self.cursor.fetchall()
+                return None
+        except mysql.connector.Error as e:
+            logging.error(f"An error occurred: {e}")
+            with open('./errorsql.log', 'a+') as f:
+                f.write(str(e) + '\n')
+            return False
 
     def execute_update(self, query, params=None):
         self.cursor.execute(query, params)
@@ -141,21 +161,27 @@ class MySQLTool:
         return self.execute_update(query, tuple(data.values()))
 
     def select(self, table, columns='*', condition=None):
-        query = f"SELECT {columns} FROM {'`'+table+'`'}"
+        query = f"SELECT {columns} FROM {'`' + table + '`'}"
         if condition:
             query += f" WHERE {condition}"
-        print(query)
+        # print(query)
         return self.execute_query(query)
 
     def create_table(self, table_name, columns):
-        query = f"CREATE TABLE IF NOT EXISTS {'`'+table_name+'`'} ({columns})"
+        query = f"CREATE TABLE IF NOT EXISTS {'`' + table_name + '`'} ({columns})"
         # return self.cursor.execute(query)
         return self.execute_query(query)
 
     def insert_many(self, table, data):
-        with self.connection.cursor() as cursor:
+        # 创建游标，不使用 with 语句
+        cursor = self.connection.cursor()
+        try:
             placeholders = ', '.join(['%s'] * len(data[0]))
             columns = ', '.join(data[0].keys())
             sql = f"INSERT INTO `{table}` ({columns}) VALUES ({placeholders})"
             cursor.executemany(sql, [tuple(d.values()) for d in data])
+        finally:
+            # 确保无论如何都关闭游标
+            cursor.close()
+        # 提交事务
         self.connection.commit()

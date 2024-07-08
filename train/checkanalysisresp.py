@@ -6,40 +6,30 @@ import config
 
 if __name__ == '__main__':
     countlist = []
+    wordlist = []
     mysql_tool = MySQLTool(config.dbhost, config.dbuser, config.dbpassword, config.dbname)
     mysql_tool.connect()
-    query = mysql_tool.execute_query("desc t_computer;")
-    for i in query:
-        print(i['Field'] + '\n')
-    # query = mysql_tool.select(f"{'t_' + i['gloss']}", "count(*)",
-    #                           "videoid={}".format(vid['video_id']))
-    # for i in query:
-    #     print(i)
-    # for word in open('./1.txt'):
-    #     # with open(config.worddir, 'r') as f:
-    #     # for i in (BaseUtils.string_to_json(f.read())):
-    #     #     if i['gloss'] == word.replace('\n', ''):
-    #     #         for vid in i['instances']:
-    #     words = word.replace('\n', '')
-    #     # try:
-    #     mysql_tool.connect()
-    #     query = mysql_tool.execute_query(
-    #         "SELECT COUNT(DISTINCT videoid) as count FROM" + " `" + f"t_{words}`")
-    #     # query = mysql_tool.select(f"{'t_' + i['gloss']}", "count(*)",
-    #     #                           "videoid={}".format(vid['video_id']))
-    #     for i in query:
-    #         print(i)
+    query = mysql_tool.execute_query("show tables;")
+    # analysis word add list
+    for wordname in open(config.wordlistfile):
+        wordlist.append(wordname)
 
-#     except Exception as e:
-#         logging.error(e)
-#     else:
-#         for count in query:
-#             for counttwo in count:
-#                 # print(counttwo)
-#                 countlist.append(counttwo)
-#                 logging.info("word:{},count:{}".format(word.replace('\n', ''), counttwo))
-#         # if counttwo == 0:
-#         #     logging.info(
-#         #         "word:{},vid:{},count:{}".format(i['gloss'], vid['video_id'], counttwo))
-# # print(list.sort(countlist))
-# mysql_tool.close()
+    for wordname in wordlist:
+        with open(config.worddir, 'r') as f:
+            for i in (BaseUtils.string_to_json(f.read())):
+                if i['gloss'] == wordname.replace('\n', ''):
+                    wordnamerep = wordname.replace('\n', '')
+                    for vid in i['instances']:
+                        sql = "select count(*) from `t_" + wordnamerep + '`' + ''' where ''' + "videoid={}".format(
+                            vid['video_id'])
+                        logging.info(sql)
+                        query = mysql_tool.execute_query(sql)
+                        if query:
+                            for i in query:
+                                if i['count(*)'] == 0:
+                                    with open('./error.log', 'a+') as f:
+                                        f.write(wordnamerep + ':' + vid['video_id'] + ":" + str(i['count(*)']) + '\n')
+                                else:
+                                    logging.info(wordnamerep + ':' + vid['video_id'] + ":" + str(i['count(*)']))
+                        else:
+                            pass

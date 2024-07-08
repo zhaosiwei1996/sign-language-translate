@@ -59,6 +59,7 @@ if __name__ == '__main__':
 
     for root, dirs, files in os.walk(datapath):
         for file in files:
+            print(file)
             if file.endswith('.xlsx'):
                 item = os.path.join(root, file)
                 data = pd.read_excel(item, header=None, engine="openpyxl").iloc[1:, 1:].values

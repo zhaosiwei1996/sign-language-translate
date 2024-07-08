@@ -1,10 +1,11 @@
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(asctime)s [%(funcName)s]-%(process)d %(message)s')
+logging.basicConfig(level=logging.DEBUG,format='[%(levelname)s] %(asctime)s [%(funcName)s]-%(process)d %(message)s')
 logger = logging.getLogger(__name__)
 
 # 指定英语单词list
-wordlistfile = "./401-500word.txt"
+# wordlistfile = "./1.txt"
+wordlistfile = "./allwords.txt"
 
 # 数据文件位置
 viddir = r"F:\\signdata\\\WLASL\\videos\\"
@@ -17,17 +18,15 @@ worddir = r"F:\\signdata\\WLASL\\info.json"
 # mysql配置
 # dbhost = "192.168.3.110"
 dbhost = "localhost"
-dbuser = "zhaosiwei"
+dbuser = "root"
 dbpassword = "111111"
 dbname = "trainlandmark"
 
 # 自动建表语句
 createtablesql = """id int auto_increment NOT NULL COMMENT '自增id',
 	videoid int NOT NULL COMMENT '视频id',
+	hand_frame_count int NOT NULL COMMENT '手部动作帧号',
 	video_total_frames int NOT NULL COMMENT '视频总帧数',
-	face int NULL COMMENT '1代表为脸,0为不是',
-	both_hands int NULL COMMENT '1代表为手,0为不是',
-	
 
     wrist_x float NOT NULL COMMENT 'wrist_x_landmark',
     wrist_y float NOT NULL COMMENT 'wrist_y_landmark',
@@ -118,7 +117,7 @@ createtablesql = """id int auto_increment NOT NULL COMMENT '自增id',
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci
+COLLATE=utf8mb4_general_ci
 COMMENT='';
 """
 
@@ -129,7 +128,7 @@ hands_nameslist = ['wrist', 'thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip', '
                    'ring_finger_tip', 'pinky_mcp', 'pinky_pip', 'pinky_dip', 'pinky_tip']
 
 # 并行分析数
-processes = 14
+processes = 40
 
 # mediapipe配置
 # 全局配置

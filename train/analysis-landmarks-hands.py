@@ -29,7 +29,7 @@ def mysqlsave(tablename, alldata):
 # thread worker
 def worker(vidfile):
     alldata = []
-    data_points = {}
+    frame_count = 0
     vid = vidfile.split(r'\\')[config.splitnum].split('.mp4')[0]
     vidword = vidfile.split(',')[0]
     vidfile = vidfile.split(',')[1]
@@ -52,24 +52,28 @@ def worker(vidfile):
         hand_landmarks = hands_results.multi_hand_landmarks
         # analysis hands xyz
         if hand_landmarks is not None:
+            frame_count += 1
             for landmark in hand_landmarks:
+                data_points = {}
                 for i in range(len(config.hands_nameslist)):
                     # 21 hands xyz analysis add dist
                     data_points.update({
-                        'videoid': vid, 'video_total_frames': total_frames, 'face': 0, 'both_hands': 1,
+                        'videoid': vid, 'hand_frame_count': frame_count, 'video_total_frames': total_frames,
                         config.hands_nameslist[i] + '_x': landmark.landmark[i].x,
                         config.hands_nameslist[i] + '_y': landmark.landmark[i].y,
                         config.hands_nameslist[i] + '_z': landmark.landmark[i].z,
                     })
-                    alldata.append(data_points)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                alldata.append(data_points)
+        # cv2.imshow('Video', frame)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
     # print(alldata)
     # to mysql save
     mysqlsave(vidword, alldata)
     endtime = BaseUtils.get_timestamp()
     logging.info('video:{},done analysis,time-consuming:{}'.format(vidfile, str(endtime - starttime)))
     # break video windows
+    cv2.destroyAllWindows()
     video_player.release()
 
 
